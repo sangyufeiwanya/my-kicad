@@ -81,11 +81,12 @@ jobs:
             windows-2022-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg*.json', 'tools/custom_vcpkg_triplets/**', '.github/vcpkg-overlays/**') }}-
             windows-2022-x64-${{ env.VCPKG_COMMIT }}-
 
-      - name: Configure KiCad
+      - name: Build dependencies and configure KiCad
+        timeout-minutes: 180
         run: ./.github/scripts/windows-ci.ps1 -Stage configure
 
       - name: Save dependency cache
-        if: always() && !cancelled() && steps.dependencies.outcome == 'success'
+        if: always() && steps.dependencies.outcome == 'success'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}

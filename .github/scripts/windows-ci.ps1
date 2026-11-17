@@ -18,19 +18,42 @@ $env:FONTCONFIG_PATH = "$deps/etc/fonts"
 switch ($Stage) {
     'configure' {
         $python = Get-Command python -CommandType Application | Select-Object -First 1 -ExpandProperty Source
-        cmake -S $source -B $build -G Ninja `
-            -DCMAKE_BUILD_TYPE=Release `
-            "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-            "-DVCPKG_OVERLAY_TRIPLETS=$source/tools/custom_vcpkg_triplets" `
-            "-DVCPKG_OVERLAY_PORTS=$source/.github/vcpkg-overlays" `
-            -DVCPKG_TARGET_TRIPLET=x64-windows `
-            -DVCPKG_HOST_TRIPLET=x64-windows `
-            -DKICAD_BUILD_QA_TESTS=ON `
-            -DKICAD_WIN32_INSTALL_PDBS=OFF `
-            -DKICAD_INSTALL_DEMOS=OFF `
-            -DX_VCPKG_APPLOCAL_DEPS_INSTALL=ON `
-            "-DPYTHON_EXECUTABLE=$python" `
-            2>&1 | Tee-Object -FilePath "$logs/configure.log"
+        # vcpkg keeps compiler output in buildtrees while a large dependency builds.
+        $progress = Start-ThreadJob -StreamingHost $Host -ArgumentList "$env:VCPKG_ROOT/buildtrees" -ScriptBlock {
+            param($buildtrees, $intervalSeconds = 60)
+            while ($true) {
+                Start-Sleep -Seconds $intervalSeconds
+                $latest = Get-ChildItem $buildtrees -File -Filter *.log -Recurse -Depth 1 -ErrorAction SilentlyContinue |
+                    Sort-Object LastWriteTimeUtc -Descending | Select-Object -First 1
+                if ($latest) {
+                    $line = (Get-Content -LiteralPath $latest.FullName -Tail 1 -ErrorAction SilentlyContinue) -join ' '
+                    if ($line.Length -gt 400) { $line = $line.Substring(0, 400) }
+                    Write-Host "[vcpkg progress] $($latest.Directory.Name)/$($latest.Name), updated $($latest.LastWriteTimeUtc.ToString('u')): $line"
+                } else {
+                    Write-Host '[vcpkg progress] Waiting for dependency build logs'
+                }
+            }
+        }
+        try {
+            cmake -S $source -B $build -G Ninja `
+                -DCMAKE_BUILD_TYPE=Release `
+                "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+                "-DVCPKG_OVERLAY_TRIPLETS=$source/tools/custom_vcpkg_triplets" `
+                "-DVCPKG_OVERLAY_PORTS=$source/.github/vcpkg-overlays" `
+                -DVCPKG_TARGET_TRIPLET=x64-windows `
+                -DVCPKG_HOST_TRIPLET=x64-windows `
+                -DKICAD_BUILD_QA_TESTS=ON `
+                -DKICAD_WIN32_INSTALL_PDBS=OFF `
+                -DKICAD_INSTALL_DEMOS=OFF `
+                -DX_VCPKG_APPLOCAL_DEPS_INSTALL=ON `
+                "-DPYTHON_EXECUTABLE=$python" `
+                2>&1 | Tee-Object -FilePath "$logs/configure.log"
+            $configureExitCode = $LASTEXITCODE
+        } finally {
+            Stop-Job $progress
+            Remove-Job $progress -Force
+        }
+        if ($configureExitCode -ne 0) { throw "KiCad configure failed with exit code $configureExitCode" }
     }
     'build' {
         cmake --build $build --parallel 2 2>&1 | Tee-Object -FilePath "$logs/build.log"

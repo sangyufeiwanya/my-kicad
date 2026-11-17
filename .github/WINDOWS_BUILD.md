@@ -15,6 +15,10 @@ PowerShell versions match much of KiCad's public binary cache. Completed depende
 also cached in GitHub Actions, including completed packages from failed configuration attempts.
 Each attempt saves a new cache snapshot so a partial cache can grow on the next run.
 Initial builds can take significantly longer than cached builds.
+Dependency compilation reports the latest internal build log every minute, including Ninja's
+completed/total task count when available. This makes long OpenCascade builds visible in Actions.
+The dependency/configuration step has a three-hour timeout; completed binary packages are saved
+even after cancellation so later attempts can reuse them.
 
 Two MIT-licensed vcpkg port overlays preserve the requested dependency versions:
 
