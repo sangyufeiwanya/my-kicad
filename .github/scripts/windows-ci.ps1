@@ -56,6 +56,12 @@ switch ($Stage) {
         if ($configureExitCode -ne 0) { throw "KiCad configure failed with exit code $configureExitCode" }
     }
     'build' {
+        # Compile the changed importer first for early feedback on its C++ errors.
+        cmake --build $build --parallel 2 --target `
+            eeschema/CMakeFiles/eeschema_kiface_objects.dir/sch_io/orcad/orcad_converter_sheet.cpp.obj `
+            eeschema/CMakeFiles/eeschema_kiface_objects.dir/sch_io/orcad/orcad_converter_symbols.cpp.obj `
+            2>&1 | Tee-Object -FilePath "$logs/orcad-compile.log"
+        if ($LASTEXITCODE -ne 0) { throw 'OrCAD converter compilation failed' }
         cmake --build $build --parallel 2 2>&1 | Tee-Object -FilePath "$logs/build.log"
     }
     'test' {

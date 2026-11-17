@@ -7023,9 +7023,9 @@ void ORCAD_CONVERTER::placeGraphicDisplayText( const ORCAD_GRAPHIC_INST& aGraphi
 /** Bus labels fall back to bus wires; a net label with no eligible net wire may still sit on a bus */
 static std::optional<std::vector<SEG>> interfaceSourceWires( const ORCAD_RAW_PAGE& aPage, const VECTOR2I& aPosition,
                                                              const std::set<std::string>& aNames,
-                                                             const std::string&           aNet )
+                                                             const wxString&             aNet )
 {
-    bool bus = SCH_CONNECTION::IsBusLabel( fromOrcadString( aNet ) );
+    bool bus = SCH_CONNECTION::IsBusLabel( aNet );
     auto sourceWires = eligibleSourceConnectivityWires( aPage, aPosition, aNames, bus );
 
     if( !bus && sourceWires && sourceWires->empty() )
@@ -7257,7 +7257,8 @@ void ORCAD_CONVERTER::placeOffpageConnectors( const ORCAD_RAW_PAGE& aPage, SCH_S
 
         const ORCAD_GRAPHIC_INST& connector = aPage.offpage[offpage.index];
         auto                      sourceWires = interfaceSourceWires( aPage, VECTOR2I( offpage.x, offpage.y ),
-                                                                      { connector.logicalName, offpage.net }, net );
+                                                                      { connector.logicalName, offpage.net },
+                                                                      fromOrcadString( net ) );
 
         VECTOR2I originalPosition = OrcadDbuToIu( offpage.x, offpage.y );
         std::optional<VECTOR2I> position = safeConnectivityLabelPosition( aScreen, originalPosition, sourceWires );
@@ -7346,7 +7347,7 @@ void ORCAD_CONVERTER::placePorts( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
         if( net.empty() )
             continue;
 
-        auto sourceWires = interfaceSourceWires( aPage, pos, { port.logicalName, net }, net );
+        auto sourceWires = interfaceSourceWires( aPage, pos, { port.logicalName, net }, fromOrcadString( net ) );
 
         std::optional<VECTOR2I> position = safeConnectivityLabelPosition(
                 aScreen, OrcadDbuToIu( pos.x, pos.y ), sourceWires );
