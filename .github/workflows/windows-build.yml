@@ -65,7 +65,10 @@ jobs:
           git -C $env:VCPKG_ROOT checkout --detach FETCH_HEAD
           & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
           if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap failed' }
-          $archiveCmake = (Get-Command cmake -CommandType Application).Source
+          $archiveCmake = Get-Command cmake -CommandType Application | Select-Object -First 1 -ExpandProperty Source
+          if (-not (Test-Path -LiteralPath $archiveCmake -PathType Leaf)) {
+            throw 'The archive CMake must resolve to one executable'
+          }
           "KICAD_ARCHIVE_CMAKE=$archiveCmake" >> $env:GITHUB_ENV
 
       - name: Restore dependency cache
@@ -73,15 +76,16 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: windows-2022-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg*.json', 'tools/custom_vcpkg_triplets/**', '.github/vcpkg-overlays/**') }}
+          key: windows-2022-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg*.json', 'tools/custom_vcpkg_triplets/**', '.github/vcpkg-overlays/**') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
+            windows-2022-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg*.json', 'tools/custom_vcpkg_triplets/**', '.github/vcpkg-overlays/**') }}-
             windows-2022-x64-${{ env.VCPKG_COMMIT }}-
 
       - name: Configure KiCad
         run: ./.github/scripts/windows-ci.ps1 -Stage configure
 
       - name: Save dependency cache
-        if: steps.dependencies.outputs.cache-hit != 'true'
+        if: always() && !cancelled() && steps.dependencies.outcome == 'success'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}

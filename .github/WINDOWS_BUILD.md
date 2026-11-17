@@ -12,7 +12,9 @@ Artifacts are retained for 14 days. No personal access token or custom repositor
 The dependency setup follows the [KiCad Windows build guide](https://dev-docs.kicad.org/en/build/windows-msvc/).
 vcpkg is pinned to `66c0373dc7fca549e5803087b9487edfe3aca0a1`; its bundled CMake and
 PowerShell versions match much of KiCad's public binary cache. Completed dependencies are
-also cached in GitHub Actions. Initial builds can take significantly longer than cached builds.
+also cached in GitHub Actions, including completed packages from failed configuration attempts.
+Each attempt saves a new cache snapshot so a partial cache can grow on the next run.
+Initial builds can take significantly longer than cached builds.
 
 Two MIT-licensed vcpkg port overlays preserve the requested dependency versions:
 

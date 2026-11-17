@@ -17,7 +17,7 @@ $env:FONTCONFIG_PATH = "$deps/etc/fonts"
 
 switch ($Stage) {
     'configure' {
-        $python = (Get-Command python).Source
+        $python = Get-Command python -CommandType Application | Select-Object -First 1 -ExpandProperty Source
         cmake -S $source -B $build -G Ninja `
             -DCMAKE_BUILD_TYPE=Release `
             "-DCMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
