@@ -20,7 +20,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/** Coordinates use DBU with Y down. Convert raw Windows-1252 strings with FromOrcadString. */
+/** Coordinates use DBU with Y down. Convert raw strings with the Library's text encoding. */
 
 #ifndef ORCAD_RECORDS_H_
 #define ORCAD_RECORDS_H_
@@ -34,6 +34,7 @@
 #include <utility>
 #include <vector>
 
+#include <wx/fontenc.h>
 #include <wx/string.h>
 
 /** Warning sink shared by all parser entry points (recoverable-issue channel). */
@@ -419,6 +420,7 @@ struct ORCAD_FONT
     int         escapement = 0;  ///< baseline direction in tenths of a degree
     int         orientation = 0; ///< glyph direction in tenths of a degree
     uint8_t     pitchAndFamily = 0;
+    uint8_t     charset = 0; ///< Windows lfCharSet
     std::string face;
     bool        italic = false;
     bool        bold = false; ///< lfWeight >= 600
@@ -468,6 +470,7 @@ struct ORCAD_LIBRARY_INFO
     uint32_t                                         createTimestamp = 0;
     uint32_t                                         modifyTimestamp = 0;
     std::vector<ORCAD_FONT>                          fonts;
+    wxFontEncoding                                  textEncoding = wxFONTENCODING_CP1252;
     std::vector<int>                                 templateFonts; ///< template font ID -> 1-based LOGFONT index
     int                                              pinNameFont = 0; ///< Design Template font ID (slot 10)
     int                                              pinNumberFont = 0; ///< Design Template font ID (slot 11)

@@ -80,10 +80,10 @@ static std::string normalizedPath( std::string aPath )
 }
 
 
-static LIB_ID libIdFor( const std::string& aLibName )
+static LIB_ID libIdFor( const wxString& aLibName )
 {
     return LIB_ID( wxString::FromUTF8( ORCAD_CONVERTER::LIB_NICK ),
-                   LIB_ID::FixIllegalChars( FromOrcadString( aLibName ), false ).wx_str() );
+                   LIB_ID::FixIllegalChars( aLibName, false ).wx_str() );
 }
 
 
@@ -433,7 +433,7 @@ bool isBookkeepingProp( const std::string& aName )
 
 
 /// Field a placed-part property becomes, as placeSymbolFields() names it; empty when it is no field
-wxString propertyFieldName( const std::string& aProperty )
+wxString propertyFieldName( const std::string& aProperty, wxFontEncoding aEncoding )
 {
     if( OrcadIEquals( aProperty, "Part Reference" ) || OrcadIEquals( aProperty, "Reference" )
         || isBookkeepingProp( aProperty ) )
@@ -456,7 +456,7 @@ wxString propertyFieldName( const std::string& aProperty )
     if( OrcadIEquals( aProperty, "Footprint" ) )
         return wxS( "OrCAD Footprint Property" );
 
-    return FromOrcadString( aProperty );
+    return FromOrcadString( aProperty, aEncoding );
 }
 
 
@@ -717,7 +717,7 @@ void ORCAD_CONVERTER::prepareSymbols()
 
         note( wxString::Format( _( "Symbol '%s' is absent from the design cache; synthesized "
                                    "placeholder from %d instance(s)." ),
-                                FromOrcadString( name ), (int) insts.size() ) );
+                                fromOrcadString( name ), (int) insts.size() ) );
 
         m_design.symbols[name] = synthesizeSymbol( name, insts );
     }
@@ -955,7 +955,7 @@ std::vector<LIB_SYMBOL*> ORCAD_CONVERTER::BuildSymbolLibrary()
         {
             warn( wxString::Format( _( "The symbol '%s' duplicates the name of another library item and was "
                                        "left out of the library." ),
-                                    FromOrcadString( cacheName ) ) );
+                                    fromOrcadString( cacheName ) ) );
             continue;
         }
 
@@ -1016,7 +1016,7 @@ std::vector<LIB_SYMBOL*> ORCAD_CONVERTER::BuildSymbolLibrary()
         {
             warn( wxString::Format( _( "The symbol '%s' could not be converted and was left out of the "
                                        "library (%s)." ),
-                                    FromOrcadString( libname ), wxString::FromUTF8( e.what() ) ) );
+                                    fromOrcadString( libname ), wxString::FromUTF8( e.what() ) ) );
         }
     }
 
@@ -1606,7 +1606,7 @@ std::pair<std::string, int> ORCAD_CONVERTER::libForInstance( const ORCAD_PLACED_
     if( !sym )
     {
         warn( wxString::Format( _( "No cached symbol for '%s' (%s); placeholder emitted." ),
-                                FromOrcadString( aInst.pkgName ), FromOrcadString( aInst.reference ) ) );
+                                fromOrcadString( aInst.pkgName ), fromOrcadString( aInst.reference ) ) );
 
         // Register empty definition so unit references stable storage.
         ORCAD_SYMBOL_DEF& slot = m_design.symbols[aInst.pkgName];
@@ -2049,10 +2049,10 @@ LIB_SYMBOL* ORCAD_CONVERTER::kicadSymbolFor( const std::string& aLibName )
 
     // OrCAD cache names can contain LIB_ID-illegal chars (e.g. backslashes from
     // library path prefixes).
-    wxString name = LIB_ID::FixIllegalChars( FromOrcadString( entry.name ), false ).wx_str();
+    wxString name = LIB_ID::FixIllegalChars( fromOrcadString( entry.name ), false ).wx_str();
 
     std::unique_ptr<LIB_SYMBOL> symbol = std::make_unique<LIB_SYMBOL>( name );
-    symbol->SetLibId( libIdFor( entry.name ) );
+    symbol->SetLibId( libIdFor( fromOrcadString( entry.name ) ) );
     symbol->SetPinNameOffset( schMm( 0.254 ) );
 
     // Per-pin text requires the symbol-wide visibility switch. Pin text sizes retain individual visibility.
@@ -2139,13 +2139,13 @@ LIB_SYMBOL* ORCAD_CONVERTER::kicadSymbolFor( const std::string& aLibName )
         refField.SetVisible( false );
         refField.SetTextPos( VECTOR2I( 0, topY ) );
 
-        valField.SetText( FromOrcadString( entry.powerNet ) );
+        valField.SetText( fromOrcadString( entry.powerNet ) );
         valField.SetVisible( true );
         valField.SetTextPos( VECTOR2I( 0, topY ) );
     }
     else
     {
-        refField.SetText( FromOrcadString( entry.refPrefix ) );
+        refField.SetText( fromOrcadString( entry.refPrefix ) );
         refField.SetVisible( true );
         refField.SetTextPos( VECTOR2I( 0, topY ) );
 
@@ -2215,7 +2215,7 @@ LIB_SYMBOL* ORCAD_CONVERTER::kicadSymbolFor( const std::string& aLibName )
                     continue;
 
                 wxString number = position < static_cast<int>( unit.pinNumbers.size() )
-                                          ? FromOrcadString( unit.pinNumbers[position] )
+                                          ? fromOrcadString( unit.pinNumbers[position] )
                                           : wxString::Format( wxS( "%d" ), (int) pi + 1 );
 
                 int pinOffset = pi < unit.pinOffsets.size() ? unit.pinOffsets[pi] : 0;
@@ -2435,7 +2435,7 @@ void ORCAD_CONVERTER::addSymbolPrimitive( LIB_SYMBOL* aSymbol, const ORCAD_PRIMI
         int       textY = hasBox ? ( aPrim.y1 + aPrim.y2 ) / 2 : aPrim.y1;
         int       boxedTextYOffset = 0;
         SCH_TEXT* text =
-                new SCH_TEXT( VECTOR2I( toX( textX ), toY( textY ) ), FromOrcadString( aPrim.text ), LAYER_DEVICE );
+                new SCH_TEXT( VECTOR2I( toX( textX ), toY( textY ) ), fromOrcadString( aPrim.text ), LAYER_DEVICE );
         text->SetTextSize( textSize( aPrim.fontIdx, false ) );
         applyFont( text, aPrim.fontIdx, false );
         applyMultilineSpacing( text, aPrim.fontIdx, false );
@@ -2559,7 +2559,8 @@ SCH_SYMBOL* ORCAD_CONVERTER::instantiateSymbol( const LIB_SYMBOL& aLibSymbol, co
                                                 int aOrient, const VECTOR2I& aPos,
                                                 const SCH_SHEET_PATH& aSheetPath ) const
 {
-    SCH_SYMBOL* symbol = new SCH_SYMBOL( aLibSymbol, libIdFor( aLibName ), &aSheetPath, aUnit, 0, aPos );
+    SCH_SYMBOL* symbol =
+            new SCH_SYMBOL( aLibSymbol, libIdFor( fromOrcadString( aLibName ) ), &aSheetPath, aUnit, 0, aPos );
     symbol->SetOrientation( toKicadOrientation( aOrient ) );
     return symbol;
 }
@@ -2648,9 +2649,9 @@ void ORCAD_CONVERTER::addSymbolPin( LIB_SYMBOL* aSymbol, const ORCAD_SYMBOL_PIN&
     wxString name;
 
     if( !aEmit.nameOverride.empty() )
-        name = FromOrcadString( aEmit.nameOverride );
+        name = fromOrcadString( aEmit.nameOverride );
     else if( !aPin.name.empty() && aPin.name.compare( 0, 4, "$PIN" ) != 0 )
-        name = FromOrcadString( aPin.name );
+        name = fromOrcadString( aPin.name );
     else if( aEmit.nameVisible && !aEmit.showPinNumbers )
         name = aEmit.number;
 
@@ -2847,7 +2848,7 @@ void ORCAD_CONVERTER::finalizeNativePowerPackages()
         }
 
         complete.GetDrawItems().sort();
-        LIB_ID id = libIdFor( libname );
+        LIB_ID id = libIdFor( fromOrcadString( libname ) );
 
         // All units of one physical part must carry the same complete library definition on save.
         for( size_t i = 0; i < part.size(); ++i )
@@ -2894,13 +2895,13 @@ void ORCAD_CONVERTER::placeInstance( ORCAD_RAW_PAGE& aPage, const ORCAD_PLACED_I
         {
             note( wxString::Format( _( "Page %s: %s uses a synthesized placeholder at a "
                                        "different orientation; pin layout approximate." ),
-                                    FromOrcadString( aPage.name ), FromOrcadString( aInst.reference ) ) );
+                                    fromOrcadString( aPage.name ), fromOrcadString( aInst.reference ) ) );
         }
         else
         {
             warn( wxString::Format( _( "Page %s: %s pin positions mismatch (orientation %d); "
                                        "geometry may be off." ),
-                                    FromOrcadString( aPage.name ), FromOrcadString( aInst.reference ), ori ) );
+                                    fromOrcadString( aPage.name ), fromOrcadString( aInst.reference ), ori ) );
         }
     }
 
@@ -3151,7 +3152,7 @@ void ORCAD_CONVERTER::placeInstance( ORCAD_RAW_PAGE& aPage, const ORCAD_PLACED_I
         {
             size_t position = def.pins[pi].position >= 0 ? def.pins[pi].position : pi;
             identity.ignored = position < uinfo.pinIgnore.size() && uinfo.pinIgnore[position];
-            identity.number = position < uinfo.pinNumbers.size() ? FromOrcadString( uinfo.pinNumbers[position] )
+            identity.number = position < uinfo.pinNumbers.size() ? fromOrcadString( uinfo.pinNumbers[position] )
                                                                  : wxString::Format( wxS( "%zu" ), pi + 1 );
             std::vector<SCH_PIN*> candidates;
 
@@ -3197,7 +3198,7 @@ void ORCAD_CONVERTER::applyCisVariants( SCH_SYMBOL* aSymbol, const ORCAD_PLACED_
 
     for( const ORCAD_CIS_VARIANT& cis : m_design.cisVariants )
     {
-        SCH_SYMBOL_VARIANT variant( FromOrcadString( cis.name ) );
+        SCH_SYMBOL_VARIANT variant( fromOrcadString( cis.name ) );
         variant.InitializeAttributes( *aSymbol );
 
         if( auto installed = cis.installed.find( occurrence->second ); installed != cis.installed.end() )
@@ -3205,19 +3206,19 @@ void ORCAD_CONVERTER::applyCisVariants( SCH_SYMBOL* aSymbol, const ORCAD_PLACED_
 
         // A variant that installs a part the core design leaves out shows its value, not the "NI" marker
         if( aSymbol->GetDNP() && !variant.m_DNP && aSymbol->GetField( FIELD_T::VALUE )->GetText() == wxS( "NI" ) )
-            variant.m_Fields[aSymbol->GetField( FIELD_T::VALUE )->GetName()] = FromOrcadString( aValue );
+            variant.m_Fields[aSymbol->GetField( FIELD_T::VALUE )->GetName()] = fromOrcadString( aValue );
 
         if( auto props = cis.props.find( occurrence->second ); props != cis.props.end() )
         {
             for( const auto& [property, value] : props->second )
             {
-                wxString fieldName = propertyFieldName( property );
+                wxString fieldName = propertyFieldName( property, m_design.library.textEncoding );
 
                 // CIS database rows fill unused columns with this placeholder
                 if( fieldName.IsEmpty() || value == "UNDEFINED" )
                     continue;
 
-                wxString   text = value == "<" + property + ">" ? wxString() : FromOrcadString( value );
+                wxString   text = value == "<" + property + ">" ? wxString() : fromOrcadString( value );
                 SCH_FIELD* field = aSymbol->FindFieldCaseInsensitive( fieldName );
 
                 // KiCad variants override existing fields, so a property only the variant sets gets an empty base
@@ -3243,7 +3244,7 @@ void ORCAD_CONVERTER::applyCisVariants( SCH_SYMBOL* aSymbol, const ORCAD_PLACED_
 
 wxString ORCAD_CONVERTER::resolveReference( const ORCAD_PLACED_INSTANCE& aInst ) const
 {
-    wxString reference = FromOrcadString( aInst.reference );
+    wxString reference = fromOrcadString( aInst.reference );
 
     // Hierarchy stream carries the authoritative per-occurrence designator; the
     // placed record remains the reusable page template's reference.
@@ -3253,7 +3254,7 @@ wxString ORCAD_CONVERTER::resolveReference( const ORCAD_PLACED_INSTANCE& aInst )
 
         if( it != m_scope.occ->partRefs.end() )
         {
-            wxString occurrence = FromOrcadString( it->second );
+            wxString occurrence = fromOrcadString( it->second );
 
             if( !occurrence.IsEmpty() && !occurrence.EndsWith( wxS( "?" ) ) )
                 reference = occurrence;
@@ -3321,7 +3322,7 @@ void ORCAD_CONVERTER::placePowerSymbol( ORCAD_RAW_PAGE& aPage, const ORCAD_GRAPH
     auto        nameProperty = aInst.props.find( "Name" );
     std::string displayName = nameProperty != aInst.props.end() ? nameProperty->second : std::string();
     std::string logicalName = aInst.logicalName;
-    symbol->SetValueFieldText( FromOrcadString( net ) );
+    symbol->SetValueFieldText( fromOrcadString( net ) );
 
     SCH_FIELD* valField = symbol->GetField( FIELD_T::VALUE );
     valField->SetPosition( pos );
@@ -3336,8 +3337,8 @@ void ORCAD_CONVERTER::placePowerSymbol( ORCAD_RAW_PAGE& aPage, const ORCAD_GRAPH
 
     if( displayedName != aInst.displayProps.end() )
     {
-        SCH_FIELD displayField( symbol, FIELD_T::USER, FromOrcadString( displayedName->name ) );
-        displayField.SetText( FromOrcadString( !displayName.empty()   ? displayName
+        SCH_FIELD displayField( symbol, FIELD_T::USER, fromOrcadString( displayedName->name ) );
+        displayField.SetText( fromOrcadString( !displayName.empty()   ? displayName
                                                : !logicalName.empty() ? logicalName
                                                                       : aNet ) );
         applyDisplayProp( displayField, *displayedName, OrcadDbuToIu( bx + displayedName->x, by + displayedName->y ),
@@ -3433,7 +3434,7 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
         }
     }
 
-    aSymbol->SetValueFieldText( FromOrcadString( aValue ) );
+    aSymbol->SetValueFieldText( fromOrcadString( aValue ) );
 
     SCH_FIELD* refField = aSymbol->GetField( FIELD_T::REFERENCE );
     SCH_FIELD* valField = aSymbol->GetField( FIELD_T::VALUE );
@@ -3514,7 +3515,7 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
         if( !aField->IsVisible() || !OrcadDisplayPropShowsName( aDisplay ) )
             return;
 
-        wxString content = FromOrcadString( aDisplay.name );
+        wxString content = fromOrcadString( aDisplay.name );
 
         if( OrcadDisplayPropShowsValue( aDisplay ) )
             content += wxS( " = " ) + aField->GetText();
@@ -3536,7 +3537,7 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
     // Keep the source footprint as metadata. An empty Footprint field permits relinking by reference.
     aSymbol->SetFootprintFieldText( wxEmptyString );
 
-    wxString fpName = FromOrcadString( aFootprint );
+    wxString fpName = fromOrcadString( aFootprint );
 
     if( !fpName.IsEmpty() )
     {
@@ -3596,12 +3597,12 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
                                        } );
 
     const wxString resolvedReference = resolveReference( aInst );
-    const bool occurrenceOverridesReference = resolvedReference != FromOrcadString( aInst.reference );
+    const bool occurrenceOverridesReference = resolvedReference != fromOrcadString( aInst.reference );
     wxString displayedText;
 
     if( partReference != properties.end() && !occurrenceOverridesReference )
     {
-        displayedText = FromOrcadString( partReference->second );
+        displayedText = fromOrcadString( partReference->second );
     }
     else
     {
@@ -3629,7 +3630,7 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
         unitDesignator = unitDesignator.substr( 0, unitDesignator.find( ':' ) );
 
         if( !unitDesignator.empty() && unitDesignator.front() != '#' )
-            displayedText = resolvedReference + FromOrcadString( unitDesignator );
+            displayedText = resolvedReference + fromOrcadString( unitDesignator );
     }
 
     if( showRef )
@@ -3705,7 +3706,7 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
         if( standardField != std::end( standardFields ) )
         {
             SCH_FIELD* standard = aSymbol->GetField( standardField->second );
-            standard->SetText( FromOrcadString( propValue ) );
+            standard->SetText( fromOrcadString( propValue ) );
 
             if( auto shownStandard = findShown( standardField->first ); shownStandard != shown.end() )
             {
@@ -3718,9 +3719,9 @@ void ORCAD_CONVERTER::placeSymbolFields( SCH_SYMBOL* aSymbol, const ORCAD_PLACED
         }
 
         wxString  fieldName = OrcadIEquals( propName, "Footprint" ) ? wxString( "OrCAD Footprint Property" )
-                                                                    : FromOrcadString( propName );
+                                                                    : fromOrcadString( propName );
         SCH_FIELD field( aSymbol, FIELD_T::USER, fieldName );
-        field.SetText( FromOrcadString( propValue ) );
+        field.SetText( fromOrcadString( propValue ) );
 
         auto sIt = findShown( propName );
 
@@ -3986,7 +3987,7 @@ void ORCAD_CONVERTER::applyFont( EDA_TEXT* aText, int aFontIdx, bool aTemplateFo
 
     if( !font.face.empty() )
     {
-        wxString                     face = FromOrcadString( font.face );
+        wxString                     face = fromOrcadString( font.face );
         const std::vector<wxString>* embeddedFonts = nullptr;
 
         if( face.CmpNoCase( wxS( "Elephant" ) ) == 0 )

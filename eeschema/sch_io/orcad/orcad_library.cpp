@@ -73,6 +73,30 @@ ORCAD_PAGE_SETTINGS OrcadParsePageSettings( ORCAD_STREAM& aStream )
 }
 
 
+wxFontEncoding OrcadTextEncoding( const std::vector<ORCAD_FONT>& aFonts )
+{
+    for( const ORCAD_FONT& font : aFonts )
+    {
+        if( font.charset == 134 ) // GB2312_CHARSET
+            return wxFONTENCODING_CP936;
+
+        // Capture can save Chinese fonts with ANSI_CHARSET, so also recognize their GBK names.
+        wxString face = FromOrcadString( font.face, wxFONTENCODING_CP936 );
+
+        if( face.StartsWith( wxS( "@" ) ) )
+            face = face.Mid( 1 );
+
+        if( face == wxS( "宋体" ) || face == wxS( "仿宋" ) || face == wxS( "楷体" )
+            || face == wxS( "黑体" ) || face == wxS( "微软雅黑" ) || face == wxS( "新宋体" ) )
+        {
+            return wxFONTENCODING_CP936;
+        }
+    }
+
+    return wxFONTENCODING_CP1252;
+}
+
+
 ORCAD_LIBRARY_INFO OrcadParseLibrary( const std::vector<char>& aData )
 {
     ORCAD_STREAM       stream( aData );
@@ -101,7 +125,9 @@ ORCAD_LIBRARY_INFO OrcadParseLibrary( const std::vector<char>& aData )
         font.orientation = stream.ReadI32();
         font.bold = stream.ReadI32() >= 600;
         font.italic = stream.ReadU8() != 0;
-        stream.Skip( 6 ); // underline, strikeout, charset and precision bytes
+        stream.Skip( 2 ); // underline, strikeout
+        font.charset = stream.ReadU8();
+        stream.Skip( 3 ); // precision and quality bytes
         font.pitchAndFamily = stream.ReadU8();
 
         std::vector<uint8_t> face = stream.ReadBytes( 32 );
@@ -114,6 +140,8 @@ ORCAD_LIBRARY_INFO OrcadParseLibrary( const std::vector<char>& aData )
 
         lib.fonts.push_back( std::move( font ) );
     }
+
+    lib.textEncoding = OrcadTextEncoding( lib.fonts );
 
     // Design Template font indices, then reserved slots and flags; v1.x has 17 slots and no count
     uint16_t templateFontCount = lib.versionMajor >= 2 ? stream.ReadU16() : 17;

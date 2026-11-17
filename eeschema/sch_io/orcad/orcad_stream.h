@@ -29,10 +29,11 @@
 #include <string_view>
 #include <vector>
 
+#include <wx/fontenc.h>
 #include <wx/string.h>
 
 /** The caller owns the buffer. Reads and cursor moves throw IO_ERROR on overrun.
- * Strings retain raw Windows-1252 bytes until conversion with FromOrcadString. */
+ * Strings retain raw source-code-page bytes until conversion with FromOrcadString. */
 class ORCAD_STREAM
 {
 public:
@@ -87,7 +88,7 @@ public:
 
     /** -- strings ------------------------------------------------------------------- */
 
-    /** Reads u16 length, raw CP-1252 bytes, and a required NUL. Invalid data throws IO_ERROR. */
+    /** Reads u16 length, raw bytes, and a required NUL. Invalid data throws IO_ERROR. */
     std::string ReadLzt();
 
     /** Consumes the NUL; throws IO_ERROR if no terminator remains. */
@@ -151,10 +152,10 @@ private:
 };
 
 
-/** Use an 8-bit fallback if Windows-1252 decoding fails. */
-wxString FromOrcadString( const std::string& aText );
+/** Decode the design's Windows code page, retaining an 8-bit fallback for invalid input. */
+wxString FromOrcadString( const std::string& aText, wxFontEncoding aEncoding = wxFONTENCODING_CP1252 );
 
-/** Fold ASCII letters only. Names stay raw Windows-1252 bytes, and the locale must not change the result. */
+/** Fold ASCII letters only. Names stay raw bytes, and the locale must not change the result. */
 std::string OrcadLower( std::string_view aText );
 
 /** Case-insensitive comparison with the folding of OrcadLower. */

@@ -146,6 +146,9 @@ public:
     static constexpr const char* LIB_NICK = "orcad_import";
 
 private:
+    /** Decode source bytes consistently for this design, independent of the host locale. */
+    wxString fromOrcadString( const std::string& aText ) const;
+
     /** -- shared bookkeeping types --------------------------------------------------- */
 
     /** One unit of an emitted multi-unit symbol. */
@@ -503,7 +506,7 @@ private:
     void assignPageItemUuids( size_t aPageOrdinal );
 
 
-    static wxString MakePageFileName( int aPageIndex, const std::string& aPageName );
+    wxString MakePageFileName( int aPageIndex, const std::string& aPageName ) const;
 
     /** Shift content on the 10-DBU grid to preserve connectivity. */
     void applyPageSettings( ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScreen );
@@ -605,7 +608,7 @@ private:
     static bool onSegment( int aX, int aY, const ORCAD_WIRE& aWire );
 
 
-    static wxString SanitizeFileName( const std::string& aName );
+    wxString SanitizeFileName( const std::string& aName ) const;
 
 private:
     ORCAD_DESIGN&      m_design;

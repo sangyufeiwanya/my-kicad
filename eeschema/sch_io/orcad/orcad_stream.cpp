@@ -279,12 +279,12 @@ void ORCAD_STREAM::SkipOptionalPreambleBlock()
 }
 
 
-wxString FromOrcadString( const std::string& aText )
+wxString FromOrcadString( const std::string& aText, wxFontEncoding aEncoding )
 {
     if( aText.empty() )
         return wxEmptyString;
 
-    wxString converted( aText.c_str(), wxCSConv( wxFONTENCODING_CP1252 ) );
+    wxString converted( aText.c_str(), wxCSConv( aEncoding ), aText.size() );
 
     if( converted.IsEmpty() )
         converted = wxString::From8BitData( aText.c_str(), aText.size() );

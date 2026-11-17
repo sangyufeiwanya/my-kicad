@@ -24,6 +24,7 @@
 #include <font/font.h>
 #include <sch_io/orcad/sch_io_orcad.h>
 #include <sch_io/orcad/orcad_converter.h>
+#include <sch_io/orcad/orcad_library.h>
 #include <sch_io/orcad/orcad_structures.h>
 #include <sch_io/ole_image.h>
 
@@ -118,6 +119,42 @@ BOOST_AUTO_TEST_CASE( CaptureCompoundFileName )
     BOOST_CHECK_EQUAL( OrcadNormalizeCfbName( std::string( "Serial I" ) + '\x02' + "O" ), "Serial I/O" );
     BOOST_CHECK_EQUAL( OrcadNormalizeCfbName( std::string( "Sch 2" ) + '\x03' + " PCI Connector" ),
                        "Sch 2: PCI Connector" );
+}
+
+
+BOOST_AUTO_TEST_CASE( CaptureTextCodePage )
+{
+    ORCAD_FONT western;
+    western.face = "Arial";
+    BOOST_CHECK( OrcadTextEncoding( { western } ) == wxFONTENCODING_CP1252 );
+    BOOST_CHECK( OrcadTextEncoding( {} ) == wxFONTENCODING_CP1252 );
+    BOOST_CHECK_EQUAL( FromOrcadString( "caf\xe9 \xb5\x46" ), wxString( wxS( "café µF" ) ) );
+
+    ORCAD_FONT chinese;
+    chinese.face = "Arial";
+    chinese.charset = 134;
+    BOOST_CHECK( OrcadTextEncoding( { western, chinese } ) == wxFONTENCODING_CP936 );
+
+    // SH-5000042977-03.DSN uses these GBK font names even though lfCharSet is ANSI.
+    chinese.charset = 0;
+
+    for( const std::string& face : { "@\xb7\xc2\xcb\xce", "\xbf\xac\xcc\xe5", "\xcb\xce\xcc\xe5" } )
+    {
+        chinese.face = face;
+        wxFontEncoding encoding = OrcadTextEncoding( { western, chinese } );
+        BOOST_CHECK( encoding == wxFONTENCODING_CP936 );
+        BOOST_CHECK_EQUAL( FromOrcadString( "\xd0\xde\xb6\xa9\xb1\xed", encoding ),
+                           wxString( wxS( "修订表" ) ) );
+        BOOST_CHECK_EQUAL( FromOrcadString( "\xb0\xe6\xb1\xbe\r\n\xd0\xde\xb6\xa9\xc8\xcb\r", encoding ),
+                           wxString( wxS( "版本\n修订人\n" ) ) );
+        BOOST_CHECK_EQUAL( FromOrcadString( "CAN 120ohm", encoding ), wxString( wxS( "CAN 120ohm" ) ) );
+        BOOST_CHECK( FromOrcadString( "", encoding ).IsEmpty() );
+        BOOST_CHECK( !FromOrcadString( "\x81", encoding ).IsEmpty() );
+    }
+
+    // One ambiguous GBK-compatible byte pair must not change Western decoding.
+    BOOST_CHECK_EQUAL( FromOrcadString( "\xe9\xe9", OrcadTextEncoding( { western } ) ),
+                       wxString( wxS( "éé" ) ) );
 }
 
 

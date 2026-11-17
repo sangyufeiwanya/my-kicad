@@ -855,10 +855,10 @@ SCH_SHEET* SCH_IO_ORCAD::LoadSchematicFile( const wxString& aFileName, SCHEMATIC
 
     // KiCad's default variant is Capture's core design; the variant selected for import becomes current
     for( const ORCAD_CIS_VARIANT& variant : design.cisVariants )
-        aSchematic->AddVariant( FromOrcadString( variant.name ) );
+        aSchematic->AddVariant( FromOrcadString( variant.name, design.library.textEncoding ) );
 
     if( !design.cisCurrentVariant.empty() )
-        aSchematic->SetCurrentVariant( FromOrcadString( design.cisCurrentVariant ) );
+        aSchematic->SetCurrentVariant( FromOrcadString( design.cisCurrentVariant, design.library.textEncoding ) );
 
     aSchematic->Settings().m_ShowDNPMarkers = false;
 

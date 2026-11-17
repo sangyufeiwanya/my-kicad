@@ -283,12 +283,12 @@ std::optional<uint32_t> occurrenceNetObjectId( const std::string& aName )
 }
 
 
-void pollProgress( PROGRESS_REPORTER* aReporter, const std::string& aPageName )
+void pollProgress( PROGRESS_REPORTER* aReporter, const wxString& aPageName )
 {
     if( !aReporter )
         return;
 
-    aReporter->Report( wxString::Format( _( "Converting page '%s'..." ), FromOrcadString( aPageName ) ) );
+    aReporter->Report( wxString::Format( _( "Converting page '%s'..." ), aPageName ) );
 
     if( !aReporter->KeepRefreshing() )
         THROW_IO_CANCELLED();
@@ -1336,7 +1336,7 @@ findDrawnBlock( const std::vector<ORCAD_RAW_PAGE>& aPages, uint32_t aDbId )
 
 
 /** Capture orders child pages by numeric folder prefix, then by folder name without case */
-static std::vector<const ORCAD_OCC_BLOCK*> sortedOccurrences( const ORCAD_OCC_SCOPE& aScope )
+static std::vector<const ORCAD_OCC_BLOCK*> sortedOccurrences( const ORCAD_OCC_SCOPE& aScope, wxFontEncoding aEncoding )
 {
     std::vector<const ORCAD_OCC_BLOCK*> occurrences;
 
@@ -1344,10 +1344,10 @@ static std::vector<const ORCAD_OCC_BLOCK*> sortedOccurrences( const ORCAD_OCC_SC
         occurrences.push_back( &occurrence );
 
     std::stable_sort( occurrences.begin(), occurrences.end(),
-                      []( const ORCAD_OCC_BLOCK* a, const ORCAD_OCC_BLOCK* b )
+                      [aEncoding]( const ORCAD_OCC_BLOCK* a, const ORCAD_OCC_BLOCK* b )
                       {
-                          wxString aName = FromOrcadString( a->childFolder );
-                          wxString bName = FromOrcadString( b->childFolder );
+                          wxString aName = FromOrcadString( a->childFolder, aEncoding );
+                          wxString bName = FromOrcadString( b->childFolder, aEncoding );
                           int      aOrder = OrcadPageOrder( aName );
                           int      bOrder = OrcadPageOrder( bName );
                           int      aKey = aOrder >= 0 ? aOrder : std::numeric_limits<int>::max();
@@ -1615,7 +1615,7 @@ SCH_SHEET* ORCAD_CONVERTER::createBlockSheet( SCH_SHEET* aParentSheet, const ORC
     auto implementation = aBlock.props.find( "Implementation" );
 
     if( implementation != aBlock.props.end() && !implementation->second.empty()
-        && FromOrcadString( implementation->second ).CmpNoCase( FromOrcadString( aOccurrence.childFolder ) ) != 0 )
+        && fromOrcadString( implementation->second ).CmpNoCase( fromOrcadString( aOccurrence.childFolder ) ) != 0 )
     {
         sheet->SetExcludedFromBoard( true );
     }
@@ -1640,7 +1640,7 @@ SCH_SHEET* ORCAD_CONVERTER::createBlockSheet( SCH_SHEET* aParentSheet, const ORC
         if( pinName != sourceName )
             m_hierBusNamesByScreen[screen->GetUuid().AsStdString()][sourceName] = pinName;
 
-        SCH_SHEET_PIN* pin = new SCH_SHEET_PIN( sheet, position, FromOrcadString( pinName ) );
+        SCH_SHEET_PIN* pin = new SCH_SHEET_PIN( sheet, position, fromOrcadString( pinName ) );
         const_cast<KIID&>( pin->m_Uuid ) =
                 deterministicUuid( "sheet-pin:" + screen->GetUuid().AsStdString(), pinIndex );
         pin->SetSide( nearestSheetSide( sourcePin, aBlock ) );
@@ -1944,7 +1944,7 @@ void ORCAD_CONVERTER::placeFolder( FOLDER_WALK& aWalk, std::vector<ORCAD_RAW_PAG
 
     auto folderSheetName = [&]( const std::string& aName )
     {
-        wxString name = FromOrcadString( aName );
+        wxString name = fromOrcadString( aName );
         return uniqueSheetName( name.IsEmpty() ? wxString( wxS( "PAGE" ) ) : name );
     };
 
@@ -1969,7 +1969,7 @@ void ORCAD_CONVERTER::placeFolder( FOLDER_WALK& aWalk, std::vector<ORCAD_RAW_PAG
     auto convertFolderPage = [&]( ORCAD_RAW_PAGE& aPage, SCH_SHEET* aSheet, const SCH_SHEET_PATH& aPath,
                                   bool aContainerPage, bool aSharedFolderPage )
     {
-        pollProgress( m_progressReporter, aPage.name );
+        pollProgress( m_progressReporter, fromOrcadString( aPage.name ) );
         numberSourcePage( aPage );
         applyPageSettings( aPage, aSheet->GetScreen() );
         convertPage( aPage, aSheet->GetScreen(), aPath, aContainerPage, aSharedFolderPage );
@@ -2085,7 +2085,7 @@ void ORCAD_CONVERTER::placeFolder( FOLDER_WALK& aWalk, std::vector<ORCAD_RAW_PAG
             {
                 VECTOR2I       pinPosition( position.x,
                                             position.y + schIUScale.mmToIU( 5 + 5 * static_cast<int>( pinIndex ) ) );
-                wxString       name = FromOrcadString( names[pinIndex] );
+                wxString       name = fromOrcadString( names[pinIndex] );
                 SCH_SHEET_PIN* pin = new SCH_SHEET_PIN( pageSheet, pinPosition, name );
                 const_cast<KIID&>( pin->m_Uuid ) =
                         deterministicUuid( "container-pin:" + pageScreen->GetUuid().AsStdString(), pinIndex );
@@ -2103,7 +2103,7 @@ void ORCAD_CONVERTER::placeFolder( FOLDER_WALK& aWalk, std::vector<ORCAD_RAW_PAG
         }
     }
 
-    for( const ORCAD_OCC_BLOCK* occurrencePtr : sortedOccurrences( aScope ) )
+    for( const ORCAD_OCC_BLOCK* occurrencePtr : sortedOccurrences( aScope, m_design.library.textEncoding ) )
     {
         const ORCAD_OCC_BLOCK&      occurrence = *occurrencePtr;
         PAGE_PLACEMENT*             parent = nullptr;
@@ -2136,7 +2136,7 @@ void ORCAD_CONVERTER::placeFolder( FOLDER_WALK& aWalk, std::vector<ORCAD_RAW_PAG
         else
         {
             sheetName = uniqueSheetName(
-                    FromOrcadString( drawn->reference.empty() ? filePageName : drawn->reference ) );
+                    fromOrcadString( drawn->reference.empty() ? filePageName : drawn->reference ) );
         }
 
         SCH_SHEET* childSheet = createBlockSheet( parent->sheet, *parent->page, *drawn, occurrence, sheetName,
@@ -2643,7 +2643,7 @@ void ORCAD_CONVERTER::convertFlatPages( const SCH_SHEET_PATH& aRootPath )
     {
         PAGE_JOB& job = jobs[0];
 
-        pollProgress( m_progressReporter, job.page->name );
+        pollProgress( m_progressReporter, fromOrcadString( job.page->name ) );
         enterScope( jobScope( job ) );
         applyPageSettings( *job.page, m_rootSheet->GetScreen() );
         convertPage( *job.page, m_rootSheet->GetScreen(), aRootPath );
@@ -2664,7 +2664,7 @@ void ORCAD_CONVERTER::convertFlatPages( const SCH_SHEET_PATH& aRootPath )
 
         for( size_t i = 0; i < jobs.size(); ++i )
         {
-            wxString name = FromOrcadString( jobs[i].page->name );
+            wxString name = fromOrcadString( jobs[i].page->name );
             int      order = i < m_design.pages.size() ? OrcadPageOrder( name ) : -1;
 
             if( order < 0 && i < m_design.pages.size() )
@@ -2723,7 +2723,7 @@ void ORCAD_CONVERTER::convertFlatPages( const SCH_SHEET_PATH& aRootPath )
         {
             SHEET_JOB&     sj = sheetJobs[i];
             SCH_SHEET_PATH pagePath = topLevelPath( topSheets[i], i + 1 );
-            pollProgress( m_progressReporter, sj.job.page->name );
+            pollProgress( m_progressReporter, fromOrcadString( sj.job.page->name ) );
             enterScope( jobScope( sj.job ) );
             applyPageSettings( *sj.job.page, topSheets[i]->GetScreen() );
             convertPage( *sj.job.page, topSheets[i]->GetScreen(), pagePath );
@@ -2759,7 +2759,7 @@ void ORCAD_CONVERTER::convertUnreferencedPages()
     {
         for( ORCAD_RAW_PAGE& page : folderPages )
         {
-            wxString name = uniqueSheetName( FromOrcadString( page.name ) );
+            wxString name = uniqueSheetName( fromOrcadString( page.name ) );
             wxString fileName;
 
             do
@@ -2781,7 +2781,7 @@ void ORCAD_CONVERTER::convertUnreferencedPages()
         SCH_SHEET_PATH path = topLevelPath( sheets[i], topSheets.size() + i + 1 );
 
         sheets[i]->SetExcludedFromBoard( true );
-        pollProgress( m_progressReporter, pages[i]->name );
+        pollProgress( m_progressReporter, fromOrcadString( pages[i]->name ) );
         applyPageSettings( *pages[i], screen );
         convertPage( *pages[i], screen, path );
 
@@ -3451,11 +3451,11 @@ void ORCAD_CONVERTER::recordNetNameMap()
 
                     for( const std::string& sourceName : sourceNames->second )
                     {
-                        memberNames.insert( FromOrcadString( kicadElectricalNetName( sourceName ) ) );
+                        memberNames.insert( fromOrcadString( kicadElectricalNetName( sourceName ) ) );
 
                         if( busAliases != m_hierBusNamesByScreen.end() )
                         {
-                            memberNames.insert( FromOrcadString( kicadElectricalNetName(
+                            memberNames.insert( fromOrcadString( kicadElectricalNetName(
                                     scopedHierBusMember( sourceName, busAliases->second ) ) ) );
                         }
                     }
@@ -3479,7 +3479,7 @@ void ORCAD_CONVERTER::recordNetNameMap()
                                  const std::vector<SCH_ITEM*>& items, bool noConnect )
         {
             IMPORT_NET_MAP_ENTRY entry;
-            entry.view = FromOrcadString( page->second->name );
+            entry.view = fromOrcadString( page->second->name );
             entry.sourceNetId = id;
             entry.occurrence = occurrence;
 
@@ -3595,14 +3595,14 @@ void ORCAD_CONVERTER::recordNetNameMap()
 
             for( const std::string& name : names )
             {
-                entry.originalName = FromOrcadString( name );
+                entry.originalName = fromOrcadString( name );
                 entry.generatedName.clear();
 
                 if( auto generated = m_sourceGeneratedNetNames.find( { screen, id } );
                     generated != m_sourceGeneratedNetNames.end()
                     && kicadOccurrenceNetName( name ) == generated->second )
                 {
-                    entry.generatedName = FromOrcadString( generated->second );
+                    entry.generatedName = fromOrcadString( generated->second );
                 }
 
                 map.entries.push_back( entry );
@@ -3753,7 +3753,7 @@ void ORCAD_CONVERTER::convertPage( ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScreen, c
     m_pageItemScreen = aScreen;
     m_pageItems.clear();
     m_sourcePages[aScreen] = &aPage;
-    std::vector<wxString> occurrencePath = { FromOrcadString( m_design.library.schematicName ) };
+    std::vector<wxString> occurrencePath = { fromOrcadString( m_design.library.schematicName ) };
     std::function<bool( const ORCAD_OCC_SCOPE& )> findOccurrence = [&]( const ORCAD_OCC_SCOPE& aScope )
     {
         if( &aScope == m_scope.occ )
@@ -3762,7 +3762,7 @@ void ORCAD_CONVERTER::convertPage( ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScreen, c
         for( const ORCAD_OCC_BLOCK& block : aScope.blocks )
         {
             occurrencePath.push_back( wxString::Format( wxS( "%u" ), block.targetDbId ) );
-            occurrencePath.push_back( FromOrcadString( block.childFolder ) );
+            occurrencePath.push_back( fromOrcadString( block.childFolder ) );
 
             if( findOccurrence( block.scope ) )
                 return true;
@@ -3936,7 +3936,13 @@ void ORCAD_CONVERTER::placePageFrame( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* a
 }
 
 
-wxString ORCAD_CONVERTER::MakePageFileName( int aPageIndex, const std::string& aPageName )
+wxString ORCAD_CONVERTER::fromOrcadString( const std::string& aText ) const
+{
+    return FromOrcadString( aText, m_design.library.textEncoding );
+}
+
+
+wxString ORCAD_CONVERTER::MakePageFileName( int aPageIndex, const std::string& aPageName ) const
 {
     wxString fileName =
             wxString::Format( wxS( "P%02d_" ), aPageIndex ) + SanitizeFileName( aPageName ) + wxS( ".kicad_sch" );
@@ -3947,10 +3953,10 @@ wxString ORCAD_CONVERTER::MakePageFileName( int aPageIndex, const std::string& a
 }
 
 
-wxString ORCAD_CONVERTER::SanitizeFileName( const std::string& aName )
+wxString ORCAD_CONVERTER::SanitizeFileName( const std::string& aName ) const
 {
     const wxString illegal( wxS( "<>:\"/\\|?*" ) );
-    wxString       in = FromOrcadString( aName );
+    wxString       in = fromOrcadString( aName );
     wxString       out;
 
     for( wxUniChar c : in )
@@ -4003,7 +4009,7 @@ void ORCAD_CONVERTER::applyPageSettings( ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScr
     // named size only survives while the content stays at source coordinates
     PAGE_INFO named;
 
-    if( !aPage.pageSize.empty() && named.SetType( FromOrcadString( aPage.pageSize ), nominalHmm > nominalWmm )
+    if( !aPage.pageSize.empty() && named.SetType( fromOrcadString( aPage.pageSize ), nominalHmm > nominalWmm )
         && named.GetType() != PAGE_SIZE_TYPE::User && extent.GetLeft() >= 0 && extent.GetTop() >= 0
         && extent.GetRight() * DBU_TO_MM <= named.GetWidthMM()
         && extent.GetBottom() * DBU_TO_MM <= named.GetHeightMM() )
@@ -4400,14 +4406,14 @@ void ORCAD_CONVERTER::applyTitleBlock( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* 
             wxString content;
 
             if( OrcadDisplayPropShowsValue( dp ) )
-                content = FromOrcadString( value );
+                content = fromOrcadString( value );
 
             if( OrcadDisplayPropShowsName( dp ) )
             {
-                content = FromOrcadString( dp.name );
+                content = fromOrcadString( dp.name );
 
                 if( OrcadDisplayPropShowsValue( dp ) )
-                    content += wxS( ": " ) + FromOrcadString( value );
+                    content += wxS( ": " ) + fromOrcadString( value );
             }
 
             int      fontId = displayFontId( dp );
@@ -4430,7 +4436,7 @@ void ORCAD_CONVERTER::applyTitleBlock( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* 
         auto get = [&]( const char* aKey ) -> wxString
         {
             std::string value = sourceValue( aKey );
-            return value == "?" ? wxString() : FromOrcadString( value );
+            return value == "?" ? wxString() : fromOrcadString( value );
         };
 
         TITLE_BLOCK titleBlock;
@@ -4465,8 +4471,8 @@ void ORCAD_CONVERTER::applyTitleBlock( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* 
             if( slot >= COMMENT_COUNT || propValue.empty() || mapped.count( propName ) )
                 continue;
 
-            titleBlock.SetComment( slot++, wxString::Format( wxS( "%s: %s" ), FromOrcadString( propName ),
-                                                             FromOrcadString( propValue ) ) );
+            titleBlock.SetComment( slot++, wxString::Format( wxS( "%s: %s" ), fromOrcadString( propName ),
+                                                             fromOrcadString( propValue ) ) );
         }
 
         aScreen->SetTitleBlock( titleBlock );
@@ -6161,7 +6167,7 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
         if( !aPower )
         {
             uint32_t netId = 0;
-            bool bus = SCH_CONNECTION::IsBusLabel( FromOrcadString( name ) );
+            bool bus = SCH_CONNECTION::IsBusLabel( fromOrcadString( name ) );
             auto sourceWires = eligibleSourceConnectivityWires(
                     aPage, pin, { aInstance.logicalName, name }, bus, &netId );
 
@@ -6169,7 +6175,8 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
             {
                 THROW_IO_ERROR( wxString::Format( _( "Page '%s': cannot determine the source net for interface '%s' "
                                                     "at (%d, %d)." ),
-                                                 FromOrcadString( aPage.name ), FromOrcadString( name ), pin.x, pin.y ) );
+                                                 fromOrcadString( aPage.name ), fromOrcadString( name ),
+                                                 pin.x, pin.y ) );
             }
 
             if( sourceWires->empty() || bus )
@@ -6547,7 +6554,7 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
 
                 bool occurrenceName = occurrenceNamesByNetId.count( wire.id )
                                       && name == *occurrenceNamesByNetId.at( wire.id );
-                wxString electricalName = FromOrcadString(
+                wxString electricalName = fromOrcadString(
                         occurrenceName ? occurrenceElectricalName( occurrenceNamesByNetId.at( wire.id ) )
                                        : kicadElectricalNetName( name ) );
                 SCH_LABEL* label = new SCH_LABEL( OrcadDbuToIu( aPosition.x, aPosition.y ), electricalName );
@@ -6595,7 +6602,7 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
 
         for( const ORCAD_ALIAS& alias : wire.aliases )
         {
-            wxString    text = FromOrcadString( kicadBusName( trimmed( alias.name ) ) );
+            wxString    text = fromOrcadString( kicadBusName( trimmed( alias.name ) ) );
             std::string electricalName = kicadElectricalNetName( trimmed( alias.name ) );
             std::string mappedName = electricalName;
 
@@ -6606,7 +6613,7 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
             }
 
             bool     mappedBusAlias = mappedName != electricalName;
-            wxString electricalText = FromOrcadString( mappedName );
+            wxString electricalText = fromOrcadString( mappedName );
 
             if( text.IsEmpty() )
                 continue;
@@ -6865,14 +6872,14 @@ void ORCAD_CONVERTER::placeWires( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
             }
 
             SCH_LABEL* label = new SCH_LABEL( OrcadDbuToIu( electricalPosition.x, electricalPosition.y ),
-                                               FromOrcadString( name ) );
+                                               fromOrcadString( name ) );
 
             appendNetIntent( aScreen, label, !isImplicitGeneratedName( name ) );
 
             if( scopedName != name )
             {
                 SCH_LABEL* scopedLabel = new SCH_LABEL( OrcadDbuToIu( electricalPosition.x, electricalPosition.y ),
-                                                        FromOrcadString( scopedName ) );
+                                                        fromOrcadString( scopedName ) );
                 appendNetIntent( aScreen, scopedLabel, !isImplicitGeneratedName( name ) );
             }
         }
@@ -6931,7 +6938,7 @@ void ORCAD_CONVERTER::placeHierarchicalBlockFields( SCH_SHEET* aSheet, const ORC
         if( !valueText.empty() )
         {
             SCH_FIELD implementation( aSheet, FIELD_T::SHEET_USER, wxS( "Implementation" ) );
-            implementation.SetText( FromOrcadString( valueText ) );
+            implementation.SetText( fromOrcadString( valueText ) );
             applyDisplay( implementation, *valueDisplay );
             aSheet->AddField( implementation );
         }
@@ -6986,7 +6993,7 @@ void ORCAD_CONVERTER::placeGraphicDisplayText( const ORCAD_GRAPHIC_INST& aGraphi
     int      baseY = std::min( aGraphic.bbox.y1, aGraphic.bbox.y2 );
     VECTOR2I textPosition = OrcadDbuToIu( baseX + aDisplay.x, baseY + aDisplay.y )
                             + ( vertical ? VECTOR2I( baseline, 0 ) : VECTOR2I( 0, baseline ) );
-    SCH_TEXT* text = new SCH_TEXT( textPosition, FromOrcadString( aText ), LAYER_NOTES );
+    SCH_TEXT* text = new SCH_TEXT( textPosition, fromOrcadString( aText ), LAYER_NOTES );
 
     switch( textRotation )
     {
@@ -7018,7 +7025,7 @@ static std::optional<std::vector<SEG>> interfaceSourceWires( const ORCAD_RAW_PAG
                                                              const std::set<std::string>& aNames,
                                                              const std::string&           aNet )
 {
-    bool bus = SCH_CONNECTION::IsBusLabel( FromOrcadString( aNet ) );
+    bool bus = SCH_CONNECTION::IsBusLabel( fromOrcadString( aNet ) );
     auto sourceWires = eligibleSourceConnectivityWires( aPage, aPosition, aNames, bus );
 
     if( !bus && sourceWires && sourceWires->empty() )
@@ -7244,7 +7251,7 @@ void ORCAD_CONVERTER::placeOffpageConnectors( const ORCAD_RAW_PAGE& aPage, SCH_S
         {
             note( wxString::Format( _( "Page '%s': the off-page connector at (%d, %d) is "
                                        "unconnected in the source design; skipped." ),
-                                    FromOrcadString( aPage.name ), offpage.x, offpage.y ) );
+                                    fromOrcadString( aPage.name ), offpage.x, offpage.y ) );
             continue;
         }
 
@@ -7259,11 +7266,11 @@ void ORCAD_CONVERTER::placeOffpageConnectors( const ORCAD_RAW_PAGE& aPage, SCH_S
         {
             THROW_IO_ERROR( wxString::Format( _( "Page '%s': cannot place off-page connector '%s' at (%d, %d) "
                                                 "without a wire intersection." ),
-                                             FromOrcadString( aPage.name ), FromOrcadString( net ),
+                                             fromOrcadString( aPage.name ), fromOrcadString( net ),
                                              offpage.x, offpage.y ) );
         }
 
-        SCH_GLOBALLABEL* label = new SCH_GLOBALLABEL( *position, FromOrcadString( net ) );
+        SCH_GLOBALLABEL* label = new SCH_GLOBALLABEL( *position, fromOrcadString( net ) );
         SPIN_STYLE       spin = spinAwayFromWire( VECTOR2I( offpage.x, offpage.y ) );
         label->SetShape( LABEL_FLAG_SHAPE::L_BIDI );
         label->SetSpinStyle( spin );
@@ -7348,11 +7355,11 @@ void ORCAD_CONVERTER::placePorts( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
         {
             THROW_IO_ERROR( wxString::Format( _( "Page '%s': cannot place port '%s' at (%d, %d) "
                                                 "without a wire intersection." ),
-                                             FromOrcadString( aPage.name ), FromOrcadString( net ), pos.x, pos.y ) );
+                                             fromOrcadString( aPage.name ), fromOrcadString( net ), pos.x, pos.y ) );
         }
 
         // Symbol name encodes arrow direction, e.g. "PORTLEFT-L".
-        wxString         symbolName = FromOrcadString( port.name ).Upper();
+        wxString         symbolName = fromOrcadString( port.name ).Upper();
         LABEL_FLAG_SHAPE shape = LABEL_FLAG_SHAPE::L_BIDI;
 
         if( symbolName.Contains( wxS( "LEFT" ) ) )
@@ -7363,9 +7370,9 @@ void ORCAD_CONVERTER::placePorts( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aScre
         SCH_LABEL_BASE* label;
 
         if( aHierarchical )
-            label = new SCH_HIERLABEL( *position, FromOrcadString( net ) );
+            label = new SCH_HIERLABEL( *position, fromOrcadString( net ) );
         else
-            label = new SCH_GLOBALLABEL( *position, FromOrcadString( net ) );
+            label = new SCH_GLOBALLABEL( *position, fromOrcadString( net ) );
 
         label->SetShape( shape );
         label->SetSpinStyle( spinAwayFromWire( pos ) );
@@ -7491,7 +7498,7 @@ void ORCAD_CONVERTER::placeGraphics( const ORCAD_RAW_PAGE& aPage, SCH_SCREEN* aS
 
             case ORCAD_PRIM_KIND::TEXT:
             {
-                wxString content = FromOrcadString( prim.text );
+                wxString content = fromOrcadString( prim.text );
                 std::string sourceFace;
                 const ORCAD_FONT* sourceFont = nullptr;
 

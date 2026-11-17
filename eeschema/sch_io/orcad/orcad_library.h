@@ -32,6 +32,9 @@
 /** Consumes 156 bytes; throws IO_ERROR on overrun. */
 ORCAD_PAGE_SETTINGS OrcadParsePageSettings( ORCAD_STREAM& aStream );
 
+/** Infer the ANSI code page from LOGFONTA metadata; Western designs retain CP1252. */
+wxFontEncoding OrcadTextEncoding( const std::vector<ORCAD_FONT>& aFonts );
+
 /** The Library version selects the string-count width. Throws IO_ERROR for invalid data. */
 ORCAD_LIBRARY_INFO OrcadParseLibrary( const std::vector<char>& aData );
 
