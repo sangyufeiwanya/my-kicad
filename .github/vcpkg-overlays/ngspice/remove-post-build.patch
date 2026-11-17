@@ -1,0 +1,237 @@
+diff --git a/visualc/vngspice-fftw.vcxproj b/visualc/vngspice-fftw.vcxproj
+index 33827de..4e37581 100644
+--- a/visualc/vngspice-fftw.vcxproj
++++ b/visualc/vngspice-fftw.vcxproj
+@@ -238,8 +238,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspiced.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -289,8 +287,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -339,10 +335,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspiced.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -400,10 +392,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     <PostBuildEvent>
+       <Command>
+ 
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -448,8 +436,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspiced.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -500,8 +486,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -550,10 +534,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspiced.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -608,8 +588,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -661,8 +639,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -721,10 +697,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -775,8 +747,6 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\fftw-3.3-dll32\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+@@ -833,10 +803,6 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      copy /y "..\..\fftw-3.3-dll64\libfftw3-3.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) fftw 64
+       </Command>
+     </PostBuildEvent>
+   </ItemDefinitionGroup>
+diff --git a/visualc/vngspice.vcxproj b/visualc/vngspice.vcxproj
+index 5698d93..fff8485 100644
+--- a/visualc/vngspice.vcxproj
++++ b/visualc/vngspice.vcxproj
+@@ -244,7 +244,7 @@
+       <AdditionalLibraryDirectories>../../libsamplerate/lib;../../libsndfile/lib;KLU/Debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+     </Link>
+     <PostBuildEvent>
+-      <Command>make-install-vngspiced.bat $(OutDir)</Command>
++      <Command></Command>
+     </PostBuildEvent>
+     <Manifest>
+       <AdditionalManifestFiles>$(ProjectDir)ngspice-x86.exe.manifest</AdditionalManifestFiles>
+@@ -297,7 +297,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      make-install-vngspice.bat $(OutDir)
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -348,9 +347,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"                              
+-      make-install-vngspiced.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -409,9 +405,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -458,7 +451,7 @@
+       <AdditionalLibraryDirectories>../../libsamplerate/lib;../../libsndfile/lib;KLU/Debug/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+     </Link>
+     <PostBuildEvent>
+-      <Command>make-install-vngspiced.bat $(OutDir)</Command>
++      <Command></Command>
+     </PostBuildEvent>
+     <Manifest>
+       <AdditionalManifestFiles>$(ProjectDir)ngspice-x86.exe.manifest</AdditionalManifestFiles>
+@@ -510,7 +503,7 @@
+       <AdditionalLibraryDirectories>../../libsamplerate/lib;../../libsndfile/lib;KLU/Release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+     </Link>
+     <PostBuildEvent>
+-      <Command>make-install-vngspice.bat $(OutDir)</Command>
++      <Command></Command>
+     </PostBuildEvent>
+     <Manifest>
+       <AdditionalManifestFiles>$(ProjectDir)ngspice-x86.exe.manifest</AdditionalManifestFiles>
+@@ -560,9 +553,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      make-install-vngspiced.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -619,7 +609,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      make-install-vngspice.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -672,7 +661,7 @@
+       <AdditionalLibraryDirectories>../../libsamplerate/lib;../../libsndfile/lib;KLU/Release/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+     </Link>
+     <PostBuildEvent>
+-      <Command>make-install-vngspice.bat $(OutDir)</Command>
++      <Command></Command>
+     </PostBuildEvent>
+     <Manifest>
+       <AdditionalManifestFiles>$(ProjectDir)ngspice-x86.exe.manifest</AdditionalManifestFiles>
+@@ -732,9 +721,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"
+-      make-install-vngspice.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>
+@@ -788,7 +774,7 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      make-install-vngspice.bat $(OutDir)</Command>
++      </Command>
+     </PostBuildEvent>
+     <Manifest>
+       <AdditionalManifestFiles>$(ProjectDir)ngspice-x86.exe.manifest</AdditionalManifestFiles>
+@@ -846,9 +832,6 @@
+     </Link>
+     <PostBuildEvent>
+       <Command>
+-      copy /y "..\..\libsndfile\bin\sndfile.dll" "$(OutDir)"
+-      copy /y "..\..\libsamplerate\bin\samplerate.dll" "$(OutDir)"                              
+-      make-install-vngspice.bat $(OutDir) 64
+       </Command>
+     </PostBuildEvent>
+     <Manifest>

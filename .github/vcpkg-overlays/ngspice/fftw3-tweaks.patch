@@ -1,0 +1,326 @@
+diff --git a/visualc/vngspice-fftw.vcxproj b/visualc/vngspice-fftw.vcxproj
+index 9fa12d9..f1b98dc 100644
+--- a/visualc/vngspice-fftw.vcxproj
++++ b/visualc/vngspice-fftw.vcxproj
+@@ -201,12 +201,11 @@
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;NGDEBUG;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -223,7 +222,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -244,15 +243,14 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>MaxSpeed</Optimization>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -269,7 +267,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -293,15 +291,14 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+     </Midl>
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;NGDEBUG;CONFIG64;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -319,7 +316,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -341,8 +338,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+@@ -352,7 +348,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;CONFIG64;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -370,7 +366,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -398,12 +394,11 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_debug|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;NGDEBUG;CONSOLE;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -420,7 +415,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -442,15 +437,14 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_release|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>MaxSpeed</Optimization>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;CONSOLE;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -467,7 +461,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -492,15 +486,14 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_debug|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+     </Midl>
+     <ClCompile>
+       <Optimization>Disabled</Optimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;NGDEBUG;CONSOLE;CONFIG64;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -518,7 +511,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -540,8 +533,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_release|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+@@ -551,7 +543,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;CONSOLE;CONFIG64;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -569,7 +561,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -594,15 +586,14 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseOMP|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>MaxSpeed</Optimization>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;USE_OMP;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -620,7 +611,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -645,8 +636,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseOMP|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+@@ -656,7 +646,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;USE_OMP;CONFIG64;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -676,7 +666,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Windows</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -703,15 +693,14 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_release_omp|Win32'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with actual date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <ClCompile>
+       <Optimization>MaxSpeed</Optimization>
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll32;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;CONSOLE;USE_OMP;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -729,7 +718,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+       <LanguageStandard>stdcpp14</LanguageStandard>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>
+@@ -753,8 +742,7 @@ lib /machine:x86 /def:..\..\fftw-3.3-dll32\libfftw3-3.def /out:$(IntDir)libfftw3
+   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='console_release_omp|x64'">
+     <PreBuildEvent>
+       <Message>force recompilation of conf.c with current date</Message>
+-      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj
+-lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3-3.lib</Command>
++      <Command>if exist $(IntDir)conf.obj del $(IntDir)conf.obj</Command>
+     </PreBuildEvent>
+     <Midl>
+       <TargetEnvironment>X64</TargetEnvironment>
+@@ -764,7 +752,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <IntrinsicFunctions>true</IntrinsicFunctions>
+       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+       <WholeProgramOptimization>true</WholeProgramOptimization>
+-      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;..\..\fftw-3.3-dll64;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
++      <AdditionalIncludeDirectories>..\..\libsamplerate\include;..\..\libsndfile\include;..\src\maths\poly;..\src\frontend;..\src\spicelib\devices;tmp-bison;src\include;..\src\spicelib\parser;..\src\include;..\src\include\cppduals;.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;__STDC_LIMIT_MACROS;SIMULATOR;XSPICE;CONSOLE;CONFIG64;USE_OMP;HAVE_LIBFFTW3;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <MinimalRebuild>false</MinimalRebuild>
+       <ExceptionHandling>
+@@ -784,7 +772,7 @@ lib /machine:x64 /def:..\..\fftw-3.3-dll64\libfftw3-3.def /out:$(IntDir)libfftw3
+       <AdditionalOptions>/openmp:llvm %(AdditionalOptions)</AdditionalOptions>
+     </ClCompile>
+     <Link>
+-      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;$(IntDir)libfftw3-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
++      <AdditionalDependencies>sndfile.lib;samplerate.lib;psapi.lib;KLU_COMPLEX.lib;fftw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+       <GenerateDebugInformation>true</GenerateDebugInformation>
+       <SubSystem>Console</SubSystem>
+       <HeapReserveSize>0</HeapReserveSize>

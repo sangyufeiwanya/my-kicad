@@ -1,0 +1,124 @@
+name: Windows build
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-x64:
+    runs-on: windows-2022
+    timeout-minutes: 360
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      VCPKG_COMMIT: 66c0373dc7fca549e5803087b9487edfe3aca0a1
+      VCPKG_ROOT: C:/kicad-vcpkg
+      VCPKG_DEFAULT_BINARY_CACHE: C:/kicad-vcpkg-cache
+      VCPKG_BINARY_SOURCES: default;nuget,https://gitlab.com/api/v4/projects/27426693/packages/nuget/index.json,read
+      VCPKG_FORCE_DOWNLOADED_BINARIES: '1'
+      VCPKG_DISABLE_METRICS: '1'
+      VCPKG_KEEP_ENV_VARS: KICAD_ARCHIVE_CMAKE
+      VCPKG_MAX_CONCURRENCY: '4'
+      KICAD_RUN_FROM_BUILD_DIR: '1'
+      PYTHONUTF8: '1'
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
+        with:
+          arch: x64
+          vsversion: '2022'
+
+      - name: Set up CMake and Ninja
+        id: cmake
+        uses: lukka/get-cmake@16e8153a8b4918849d92aad131befe67a3705daa
+        with:
+          cmakeVersion: 4.4.4
+          ninjaVersion: 1.13.2
+
+      - name: Prepare build tools
+        run: |
+          git config --global core.longpaths true
+          New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+          New-Item -ItemType Directory -Force -Path build-logs | Out-Null
+          git init $env:VCPKG_ROOT
+          git -C $env:VCPKG_ROOT remote add origin https://github.com/microsoft/vcpkg.git
+          git -C $env:VCPKG_ROOT fetch --depth 1 origin $env:VCPKG_COMMIT
+          git -C $env:VCPKG_ROOT checkout --detach FETCH_HEAD
+          & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
+          if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap failed' }
+          "KICAD_ARCHIVE_CMAKE=${{ steps.cmake.outputs.cmake-path }}" >> $env:GITHUB_ENV
+
+      - name: Restore dependency cache
+        id: dependencies
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: windows-2022-x64-${{ env.VCPKG_COMMIT }}-${{ hashFiles('vcpkg*.json', 'tools/custom_vcpkg_triplets/**', '.github/vcpkg-overlays/**') }}
+          restore-keys: |
+            windows-2022-x64-${{ env.VCPKG_COMMIT }}-
+
+      - name: Configure KiCad
+        run: ./.github/scripts/windows-ci.ps1 -Stage configure
+
+      - name: Save dependency cache
+        if: steps.dependencies.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ steps.dependencies.outputs.cache-primary-key }}
+
+      - name: Build all targets
+        run: ./.github/scripts/windows-ci.ps1 -Stage build
+
+      - name: Run OrCAD regression tests
+        run: ./.github/scripts/windows-ci.ps1 -Stage test
+
+      - name: Package Windows application
+        run: ./.github/scripts/windows-ci.ps1 -Stage package
+
+      - name: Upload Windows application
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: kicad-windows-x64-${{ github.sha }}
+          path: build-msvc/portable/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+      - name: Collect dependency logs
+        if: always()
+        run: |
+          if (Test-Path "$env:VCPKG_ROOT/buildtrees") {
+            Get-ChildItem "$env:VCPKG_ROOT/buildtrees" -Directory | ForEach-Object {
+              $destination = "build-logs/dependencies/$($_.Name)"
+              New-Item -ItemType Directory -Force -Path $destination | Out-Null
+              Get-ChildItem $_.FullName -File -Filter *.log | Copy-Item -Destination $destination
+            }
+          }
+
+      - name: Upload build and test logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: windows-build-logs-${{ github.run_id }}
+          path: |
+            build-logs/
+            build-msvc/vcpkg-manifest-install.log
+            build-msvc/CMakeFiles/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
+          retention-days: 14
