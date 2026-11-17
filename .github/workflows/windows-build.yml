@@ -21,7 +21,7 @@ jobs:
         shell: pwsh
     env:
       VCPKG_COMMIT: 66c0373dc7fca549e5803087b9487edfe3aca0a1
-      VCPKG_ROOT: C:/kicad-vcpkg
+      KICAD_VCPKG_ROOT: C:/kicad-vcpkg
       VCPKG_DEFAULT_BINARY_CACHE: C:/kicad-vcpkg-cache
       VCPKG_BINARY_SOURCES: default;nuget,https://gitlab.com/api/v4/projects/27426693/packages/nuget/index.json,read
       VCPKG_FORCE_DOWNLOADED_BINARIES: '1'
@@ -52,6 +52,10 @@ jobs:
 
       - name: Prepare build tools
         run: |
+          $PSNativeCommandUseErrorActionPreference = $true
+          # VsDevCmd sets VCPKG_ROOT to its bundled installation.
+          $env:VCPKG_ROOT = $env:KICAD_VCPKG_ROOT
+          "VCPKG_ROOT=$env:VCPKG_ROOT" >> $env:GITHUB_ENV
           git config --global core.longpaths true
           New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
           New-Item -ItemType Directory -Force -Path build-logs | Out-Null
@@ -61,7 +65,8 @@ jobs:
           git -C $env:VCPKG_ROOT checkout --detach FETCH_HEAD
           & "$env:VCPKG_ROOT/bootstrap-vcpkg.bat" -disableMetrics
           if ($LASTEXITCODE -ne 0) { throw 'vcpkg bootstrap failed' }
-          "KICAD_ARCHIVE_CMAKE=${{ steps.cmake.outputs.cmake-path }}" >> $env:GITHUB_ENV
+          $archiveCmake = (Get-Command cmake -CommandType Application).Source
+          "KICAD_ARCHIVE_CMAKE=$archiveCmake" >> $env:GITHUB_ENV
 
       - name: Restore dependency cache
         id: dependencies
